@@ -18,7 +18,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CustomerController {
 
+    
+
     private final CustomerService customerService;
+    public CustomerController() {
+        this.customerService = null;
+    }
 
     @PostMapping
     public ResponseEntity<ApiResponse<CustomerResponse>> createCustomer(

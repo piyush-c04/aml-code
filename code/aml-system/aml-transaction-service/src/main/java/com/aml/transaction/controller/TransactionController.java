@@ -12,10 +12,22 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/transactions")
-@RequiredArgsConstructor
 public class TransactionController {
 
+    
+
+    
     private final TransactionService transactionService;
+    public TransactionController(TransactionService transactionService) {
+        this.transactionService = transactionService;
+    }
+
+    
+    public TransactionController() {
+        this.transactionService = null;
+    }
+
+    
 
     @PostMapping
     public ResponseEntity<ApiResponse<TransactionResponse>> createTransaction(
