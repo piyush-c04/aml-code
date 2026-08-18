@@ -5,9 +5,9 @@ spring:
   application:
     name: transaction-service
   datasource:
-    url: jdbc:oracle:thin:@localhost:1521/XE
-    username: SYSTEM
-    password: Password123
+    url: jdbc:oracle:thin:@localhost:1521/freepdb1
+    username: capstone
+    password: root
     driver-class-name: oracle.jdbc.OracleDriver
   jpa:
     database-platform: org.hibernate.dialect.OracleDialect
