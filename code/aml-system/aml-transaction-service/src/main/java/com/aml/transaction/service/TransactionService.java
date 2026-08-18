@@ -3,19 +3,14 @@ package com.aml.transaction.service;
 import com.aml.common.dto.request.CreateTransactionRequest;
 import com.aml.common.dto.response.TransactionResponse;
 import com.aml.common.entity.Account;
-import com.aml.common.entity.Customer;
 import com.aml.common.entity.Transaction;
 import com.aml.common.entity.TransactionStatus;
 import com.aml.common.repository.AccountRepository;
-import com.aml.common.repository.CustomerRepository;
 import com.aml.common.repository.TransactionRepository;
-import com.aml.common.utils.HashUtil;
 import com.aml.config.event.EventBus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -25,18 +20,15 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
-    private final CustomerRepository customerRepository;
     private final EventBus eventBus;
 
     public TransactionService(
             TransactionRepository transactionRepository,
             AccountRepository accountRepository,
-            CustomerRepository customerRepository,
             EventBus eventBus
     ) {
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
-        this.customerRepository = customerRepository;
         this.eventBus = eventBus;
     }
 
@@ -50,43 +42,45 @@ public class TransactionService {
     ) {
 
         // --------------------------------------------------------
-        // 1. Retrieve or create sender account
+        // 1. Find sender account
         // --------------------------------------------------------
-        String senderHash = HashUtil.sha256(
-                request.getSenderAccountId()
-        );
 
         Account sender = accountRepository
-                .findByAccountHash(senderHash)
-                .orElseGet(() -> createAccount(senderHash));
+                .findByAccountHash(
+                        hashAccountId(request.getSenderAccountId())
+                )
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Sender account not found: "
+                                        + request.getSenderAccountId()
+                        )
+                );
 
         // --------------------------------------------------------
-        // 2. Retrieve or create receiver account
+        // 2. Find receiver account
         // --------------------------------------------------------
-        String receiverHash = HashUtil.sha256(
-                request.getReceiverAccountId()
-        );
 
         Account receiver = accountRepository
-                .findByAccountHash(receiverHash)
-                .orElseGet(() -> createAccount(receiverHash));
+                .findByAccountHash(
+                        hashAccountId(request.getReceiverAccountId())
+                )
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Receiver account not found: "
+                                        + request.getReceiverAccountId()
+                        )
+                );
 
         // --------------------------------------------------------
         // 3. Create transaction
         // --------------------------------------------------------
+
         Transaction transaction = new Transaction();
 
         transaction.setId(UUID.randomUUID().toString());
-
-        transaction.setTransactionId(
-                request.getTransactionId() != null
-                        ? request.getTransactionId()
-                        : "TXN-" + UUID.randomUUID()
-        );
-
+        transaction.setTransactionId(request.getTransactionId());
         transaction.setSenderAccount(sender);
         transaction.setReceiverAccount(receiver);
-
         transaction.setAmount(request.getAmount());
         transaction.setPaymentCurrency(
                 request.getPaymentCurrency()
@@ -94,33 +88,35 @@ public class TransactionService {
         transaction.setReceivedCurrency(
                 request.getReceivedCurrency()
         );
-
-        transaction.setTransactionDatetime(
-                request.getTransactionDatetime() != null
-                        ? request.getTransactionDatetime()
-                        : OffsetDateTime.now()
-        );
-
         transaction.setPaymentType(
                 request.getPaymentType()
+        );
+        transaction.setTransactionDatetime(
+                request.getTransactionDatetime()
         );
 
         transaction.setStatus(
                 TransactionStatus.COMPLETED
         );
 
+        // --------------------------------------------------------
+        // 4. Save
+        // --------------------------------------------------------
+
         Transaction savedTransaction =
                 transactionRepository.save(transaction);
 
         // --------------------------------------------------------
-        // 4. Build response
+        // 5. Build response
         // --------------------------------------------------------
+
         TransactionResponse response =
                 mapToResponse(savedTransaction);
 
         // --------------------------------------------------------
-        // 5. Publish transaction event
+        // 6. Publish event
         // --------------------------------------------------------
+
         eventBus.publish(response);
 
         return response;
@@ -140,7 +136,7 @@ public class TransactionService {
     }
 
     // ============================================================
-    // GET TRANSACTION BY INTERNAL DATABASE ID
+    // GET BY INTERNAL ID
     // ============================================================
 
     @Transactional(readOnly = true)
@@ -152,8 +148,7 @@ public class TransactionService {
                 transactionRepository.findById(id)
                         .orElseThrow(() ->
                                 new IllegalArgumentException(
-                                        "Transaction not found with ID: "
-                                                + id
+                                        "Transaction not found: " + id
                                 )
                         );
 
@@ -161,7 +156,7 @@ public class TransactionService {
     }
 
     // ============================================================
-    // GET TRANSACTION BY BUSINESS TRANSACTION ID
+    // GET BY BUSINESS TRANSACTION ID
     // ============================================================
 
     @Transactional(readOnly = true)
@@ -170,20 +165,20 @@ public class TransactionService {
     ) {
 
         Transaction transaction =
-                transactionRepository.findByTransactionId(
-                        transactionId
-                ).orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Transaction not found: "
-                                        + transactionId
-                        )
-                );
+                transactionRepository
+                        .findByTransactionId(transactionId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Transaction not found: "
+                                                + transactionId
+                                )
+                        );
 
         return mapToResponse(transaction);
     }
 
     // ============================================================
-    // GET TRANSACTIONS FOR AN ACCOUNT
+    // GET TRANSACTIONS FOR ACCOUNT
     // ============================================================
 
     @Transactional(readOnly = true)
@@ -191,21 +186,28 @@ public class TransactionService {
             String accountId
     ) {
 
-        List<Transaction> transactions =
-                transactionRepository
-                        .findBySenderAccount_IdOrReceiverAccount_Id(
-                                accountId,
-                                accountId
-                        );
+        String accountHash = hashAccountId(accountId);
 
-        return transactions
+        Account account = accountRepository
+                .findByAccountHash(accountHash)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Account not found: " + accountId
+                        )
+                );
+
+        return transactionRepository
+                .findBySenderAccount_IdOrReceiverAccount_Id(
+                        account.getId(),
+                        account.getId()
+                )
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
     // ============================================================
-    // MAP ENTITY -> RESPONSE
+    // ENTITY -> RESPONSE
     // ============================================================
 
     private TransactionResponse mapToResponse(
@@ -261,67 +263,10 @@ public class TransactionService {
     }
 
     // ============================================================
-    // TEMPORARY ACCOUNT CREATION
+    // HASH ACCOUNT ID
     // ============================================================
 
-    /**
-     * Temporary account creation logic.
-     *
-     * This should eventually move to AccountService once
-     * transaction creation receives real customer/account
-     * information.
-     */
-    private Account createAccount(String accountHash) {
-
-        // Create temporary customer
-        Customer customer = new Customer();
-
-        customer.setId(
-                UUID.randomUUID().toString()
-        );
-
-        customer.setAccountHolderType(
-                "INDIVIDUAL"
-        );
-
-        customer.setKycVerificationStatus(
-                "PENDING"
-        );
-
-        customer.setRiskCountryFlag(false);
-
-        Customer savedCustomer =
-                customerRepository.save(customer);
-
-        // Create account
-        Account account = new Account();
-
-        account.setId(
-                UUID.randomUUID().toString()
-        );
-
-        account.setCustomer(
-                savedCustomer
-        );
-
-        account.setAccountHash(
-                accountHash
-        );
-
-        account.setAccountType(
-                "SAVINGS"
-        );
-
-        account.setBankLocation(
-                "US"
-        );
-
-        account.setAccountRiskScore(
-                BigDecimal.ZERO
-        );
-
-        account.setIsFlagged(false);
-
-        return accountRepository.save(account);
+    private String hashAccountId(String accountId) {
+        return com.aml.common.utils.HashUtil.sha256(accountId);
     }
 }
