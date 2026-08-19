@@ -1,0 +1,73 @@
+<div class="page-view">
+  <div class="page-head dashboard-page-head">
+    <div class="page-actions">
+      <oj-button chroming="outlined" on-oj-action="[[exportSummary]]">Export summary</oj-button>
+      <oj-button chroming="callToAction" on-oj-action="[[screenTransaction]]">Screen transaction</oj-button>
+    </div>
+  </div>
+
+  <div class="metric-grid">
+    <!-- ko foreach: metrics -->
+    <div class="metric-card">
+      <div class="metric-top">
+        <span data-bind="text: $data[0]"></span>
+        <span class="metric-icon">&diams;</span>
+      </div>
+      <strong data-bind="text: $data[1]"></strong>
+      <span class="trend" data-bind="text: $data[2], css: {warn: $data[3] === 'warn'}"></span>
+    </div>
+    <!-- /ko -->
+  </div>
+
+  <div class="dashboard-grid">
+    <section class="panel trend-panel">
+      <div class="panel-head">
+        <h3>Suspicious transaction trend</h3>
+        <button class="plain-action">Last 14 days⌄</button>
+      </div>
+      <div class="risk-chart">
+        <!-- ko foreach: trend -->
+        <span class="bar-wrap"><i data-bind="style: {height: $data + '%'}"></i></span>
+        <!-- /ko -->
+      </div>
+      <div class="chart-labels">
+        <span>04 Aug</span><span>07 Aug</span><span>10 Aug</span><span>13 Aug</span><span>17 Aug</span>
+      </div>
+    </section>
+
+    <section class="panel distribution-panel">
+      <div class="panel-head">
+        <h3>Customer risk distribution</h3>
+        <button class="plain-action" data-bind="click: function(){ router.go('customers'); }">View customers</button>
+      </div>
+      <div class="donut-area">
+        <div class="donut">
+          <span><b>7</b>Customers</span>
+        </div>
+        <div class="legend">
+          <div><i class="legend-low"></i>Low <b>2</b></div>
+          <div><i class="legend-medium"></i>Medium <b>2</b></div>
+          <div><i class="legend-high"></i>High <b>2</b></div>
+          <div><i class="legend-critical"></i>Critical <b>1</b></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel table-panel full-span">
+      <div class="table-toolbar">
+        <div class="panel-head table-head-title"><h3>Recent suspicious activity</h3></div>
+        <div class="filter-row">
+          <select aria-label="Severity"><option>All severities</option><option>Critical</option><option>High</option></select>
+          <select aria-label="Status"><option>All statuses</option><option>New</option><option>Under review</option></select>
+        </div>
+      </div>
+
+      <table class="aegis-data-table">
+        <thead><tr><th>Alert</th><th>Customer</th><th>Transaction</th><th>Type</th><th>Severity</th><th>Score</th><th>Status</th><th>Assigned</th><th>Created</th></tr></thead>
+        <tbody data-bind="foreach: alerts">
+          <tr><td data-bind="text: id"></td><td data-bind="text: customer"></td><td data-bind="text: txn"></td><td data-bind="text: type"></td><td data-bind="text: severity"></td><td data-bind="text: score"></td><td data-bind="text: status"></td><td data-bind="text: analyst"></td><td data-bind="text: created"></td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</div>

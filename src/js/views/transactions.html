@@ -1,0 +1,11 @@
+<div class="page-view">
+  <div class="page-head">
+    <div>
+      <h1>Transaction risk monitoring</h1>
+      <p>Rule-based and AI-assisted screening across payment channels.</p>
+    </div>
+    <div class="page-actions"><oj-button chroming="outlined">Import batch</oj-button><oj-button chroming="callToAction"
+        on-oj-action="[[screen]]">+ Screen transaction</oj-button></div>
+  </div>
+  <div class="panel table-panel"><table class="aegis-data-table"><thead><tr><th>Transaction</th><th>Customer</th><th>Date</th><th>Amount</th><th>Type</th><th>Channel</th><th>Beneficiary</th><th>Location</th><th>Risk</th><th>Status</th></tr></thead><tbody data-bind="foreach: rows"><tr><td data-bind="text: id"></td><td data-bind="text: customer"></td><td data-bind="text: date"></td><td data-bind="text: amount"></td><td data-bind="text: type"></td><td data-bind="text: channel"></td><td data-bind="text: beneficiary"></td><td data-bind="text: location"></td><td><span class="risk-pill" data-bind="text: score + ' · ' + (score >= 85 ? 'CRITICAL' : score >= 70 ? 'HIGH' : score >= 40 ? 'MEDIUM' : 'LOW'), css: score >= 85 ? 'critical' : score >= 70 ? 'high' : score >= 40 ? 'medium' : 'low'"></span></td><td><span class="status" data-bind="text: status.replace('_', ' '), css: status.toLowerCase().replace('_', '-')"></span></td></tr></tbody></table></div>
+</div>

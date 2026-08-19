@@ -1,0 +1,61 @@
+<div class="page-view" data-bind="with: customer">
+    <div class="page-head">
+        <div>
+            <h1 data-bind="text:name"></h1>
+            <p data-bind="text:id + ' · ' + type + ' · Onboarded ' + onboarded"></p>
+        </div>
+        <div class="page-actions"><oj-button chroming="outlined" on-oj-action="[[ $parent.back ]]">&larr;
+                Customers</oj-button><oj-button chroming="callToAction" on-oj-action="[[ $parent.runAssessment ]]">Run
+                AI assessment</oj-button></div>
+    </div>
+    <div class="profile-grid">
+        <section class="panel profile-card">
+            <div class="profile-title"><span class="avatar large" data-bind="text:$parent.initials(name)"></span>
+                <div>
+                    <h2 data-bind="text:name"></h2>
+                    <p data-bind="text:occupation + ' · ' + country"></p>
+                </div><span class="risk-pill"
+                    data-bind="css:$parent.riskClass(score), text:score + ' · ' + risk"></span>
+            </div>
+            <div class="detail-list">
+                <div><small>KYC STATUS</small><b data-bind="text:kyc"></b></div>
+                <div><small>CUSTOMER TYPE</small><b data-bind="text:type"></b></div>
+                <div><small>ONBOARDING</small><b data-bind="text:onboarded"></b></div>
+                <div><small>CLASSIFICATION</small><b>CONFIDENTIAL</b></div>
+            </div>
+        </section>
+        <section class="panel ai-card">
+            <div class="panel-head">
+                <h3>Customer AI risk assessment</h3><span class="model-chip">MODEL v1.4</span>
+            </div>
+            <div class="ai-score">
+                <div class="score-ring" data-bind="style:{'--score':score + '%'}"><b data-bind="text:score"></b></div>
+                <div><span data-bind="text:risk + ' RISK'"></span>
+                    <h3 data-bind="text:confidence + '% confidence'"></h3>
+                    <p data-bind="text:'Last assessed ' + last"></p>
+                </div>
+            </div>
+            <div class="risk-factors">
+                <div><span>Transaction velocity</span><i><b data-bind="style:{width: Math.min(96, score) + '%'}"></b></i></div>
+                <div><span>Amount anomaly</span><i><b data-bind="style:{width: Math.max(45, score - 8) + '%'}"></b></i></div>
+                <div><span>Account behavior</span><i><b data-bind="style:{width: Math.max(40, score - 5) + '%'}"></b></i></div>
+                <div><span>Geographic anomaly</span><i><b data-bind="style:{width: Math.max(35, score - 18) + '%'}"></b></i></div>
+            </div>
+        </section>
+        <section class="panel full-span">
+            <div class="panel-head">
+                <h3>AI explanation &amp; recommendation</h3><span class="status under-review">EXPLAINABLE AI</span>
+            </div>
+            <blockquote>The customer&#39;s recent transaction behavior significantly deviates from historical activity,
+                including increased transaction frequency, rapid movement of funds, and multiple newly added
+                beneficiaries.</blockquote>
+            <div class="recommendation"><b>Recommended action</b><span
+                    data-bind="text:score >= 85 ? 'Escalate for enhanced due diligence and investigate related beneficiaries.' : 'Continue monitoring and review supporting documentation.'"></span>
+            </div>
+        </section>
+        <section class="panel full-span">
+            <div class="panel-head"><h3>Related transactions</h3><span data-bind="text:$parent.transactions().length + ' record(s)'"></span></div>
+            <table class="aegis-data-table"><thead><tr><th>Transaction</th><th>Date</th><th>Amount</th><th>Type</th><th>Channel</th><th>Location</th><th>Risk</th><th>Status</th></tr></thead><tbody data-bind="foreach: $parent.transactions"><tr><td data-bind="text:id"></td><td data-bind="text:date"></td><td data-bind="text:amount"></td><td data-bind="text:type"></td><td data-bind="text:channel"></td><td data-bind="text:location"></td><td data-bind="text:score"></td><td data-bind="text:status"></td></tr></tbody></table>
+        </section>
+    </div>
+</div>
