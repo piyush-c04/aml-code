@@ -11,7 +11,7 @@ models/meta_learner.joblib (only when a stacking method won)
 splits/train.parquet (used as the LIME background dataset)
 
 Run:
-    uvicorn fastapi_app:app --host 0.0.0.0 --port 8000
+    uvicorn fastapi_app:app --host localhost --port 8000 --reload --env-file .env
 """
 
 from __future__ import annotations
@@ -809,18 +809,18 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-allowed_origins = [
-    item.strip()
-    for item in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
-    if item.strip()
-]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=False,
-    allow_methods=["GET", "POST"],
-    allow_headers=["Authorization", "Content-Type", "X-Correlation-ID"],
-)
+# allowed_origins = [
+#     item.strip()
+#     for item in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+#     if item.strip()
+# ]
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=allowed_origins,
+#     allow_credentials=False,
+#     allow_methods=["GET", "POST"],
+#     allow_headers=["Authorization", "Content-Type", "X-Correlation-ID"],
+# )
 
 
 @app.exception_handler(Exception)
