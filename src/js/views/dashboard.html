@@ -22,7 +22,7 @@
   <div class="dashboard-grid">
     <section class="panel trend-panel">
       <div class="panel-head">
-        <h3>Suspicious transaction trend</h3>
+        <h3>Recent transaction activity</h3>
         <button class="plain-action">Last 14 days⌄</button>
       </div>
       <div class="risk-chart">
@@ -31,41 +31,34 @@
         <!-- /ko -->
       </div>
       <div class="chart-labels">
-        <span>04 Aug</span><span>07 Aug</span><span>10 Aug</span><span>13 Aug</span><span>17 Aug</span>
+          <span>Latest 14 transactions</span>
       </div>
     </section>
 
     <section class="panel distribution-panel">
       <div class="panel-head">
-        <h3>Customer risk distribution</h3>
+        <h3>Backend data</h3>
         <button class="plain-action" data-bind="click: function(){ router.go('customers'); }">View customers</button>
       </div>
       <div class="donut-area">
         <div class="donut">
-          <span><b>7</b>Customers</span>
+          <span><b data-bind="text: metrics().length ? metrics()[0][1] : '0'"></b>Customers</span>
         </div>
         <div class="legend">
-          <div><i class="legend-low"></i>Low <b>2</b></div>
-          <div><i class="legend-medium"></i>Medium <b>2</b></div>
-          <div><i class="legend-high"></i>High <b>2</b></div>
-          <div><i class="legend-critical"></i>Critical <b>1</b></div>
+          <div>Customer, account, and transaction totals are loaded from the API.</div>
         </div>
       </div>
     </section>
 
     <section class="panel table-panel full-span">
       <div class="table-toolbar">
-        <div class="panel-head table-head-title"><h3>Recent suspicious activity</h3></div>
-        <div class="filter-row">
-          <select aria-label="Severity"><option>All severities</option><option>Critical</option><option>High</option></select>
-          <select aria-label="Status"><option>All statuses</option><option>New</option><option>Under review</option></select>
-        </div>
+        <div class="panel-head table-head-title"><h3>Recent transactions</h3></div>
       </div>
 
       <table class="aegis-data-table">
-        <thead><tr><th>Alert</th><th>Customer</th><th>Transaction</th><th>Type</th><th>Severity</th><th>Score</th><th>Status</th><th>Assigned</th><th>Created</th></tr></thead>
+        <thead><tr><th>Transaction</th><th>Sender account</th><th>Receiver account</th><th>Amount</th><th>Currency</th><th>Payment type</th><th>Status</th><th>Date</th></tr></thead>
         <tbody data-bind="foreach: alerts">
-          <tr><td data-bind="text: id"></td><td data-bind="text: customer"></td><td data-bind="text: txn"></td><td data-bind="text: type"></td><td data-bind="text: severity"></td><td data-bind="text: score"></td><td data-bind="text: status"></td><td data-bind="text: analyst"></td><td data-bind="text: created"></td></tr>
+          <tr><td data-bind="text: transactionId"></td><td data-bind="text: senderAccountId"></td><td data-bind="text: receiverAccountId"></td><td data-bind="text: amount"></td><td data-bind="text: paymentCurrency"></td><td data-bind="text: paymentType"></td><td data-bind="text: status"></td><td data-bind="text: transactionDatetime"></td></tr>
         </tbody>
       </table>
     </section>
