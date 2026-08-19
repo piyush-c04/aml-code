@@ -9,6 +9,7 @@ import com.aml.common.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -22,45 +23,77 @@ public class CustomerService {
         this.customerRepository = customerRepository;
     }
 
-    // ------------------------------------------------------------
-    // Create customer
-    // ------------------------------------------------------------
+    // ============================================================
+    // CREATE CUSTOMER
+    // ============================================================
+
     @Transactional
-    public CustomerResponse createCustomer(CreateCustomerRequest request) {
+    public CustomerResponse createCustomer(
+            CreateCustomerRequest request
+    ) {
+
+        if (request == null) {
+            throw new IllegalArgumentException(
+                    "Customer request cannot be null"
+            );
+        }
 
         Customer customer = new Customer();
 
         customer.setId(UUID.randomUUID().toString());
-        customer.setAccountHolderType(request.getAccountHolderType());
-        customer.setKycVerificationStatus(request.getKycVerificationStatus());
+
+        customer.setAccountHolderType(
+                request.getAccountHolderType()
+        );
+
+        customer.setKycVerificationStatus(
+                request.getKycVerificationStatus()
+        );
+
         customer.setRiskCountryFlag(
                 request.getRiskCountryFlag() != null
                         ? request.getRiskCountryFlag()
                         : false
         );
 
-        Customer savedCustomer = customerRepository.save(customer);
+        if (customer.getAccounts() == null) {
+            customer.setAccounts(new ArrayList<>());
+        }
+
+        Customer savedCustomer =
+                customerRepository.save(customer);
 
         return mapToResponse(savedCustomer);
     }
 
-    // ------------------------------------------------------------
-    // Get customer
-    // ------------------------------------------------------------
+    // ============================================================
+    // GET CUSTOMER
+    // ============================================================
+
     @Transactional(readOnly = true)
     public CustomerResponse getCustomerById(String id) {
 
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Customer not found: " + id)
-                );
+        if (id == null || id.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Customer ID cannot be null or blank"
+            );
+        }
+
+        Customer customer =
+                customerRepository.findById(id)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Customer not found: " + id
+                                )
+                        );
 
         return mapToResponse(customer);
     }
 
-    // ------------------------------------------------------------
-    // Get all customers
-    // ------------------------------------------------------------
+    // ============================================================
+    // GET ALL CUSTOMERS
+    // ============================================================
+
     @Transactional(readOnly = true)
     public List<CustomerResponse> getAllCustomers() {
 
@@ -70,27 +103,47 @@ public class CustomerService {
                 .collect(Collectors.toList());
     }
 
-    // ------------------------------------------------------------
-    // Update customer
-    // ------------------------------------------------------------
+    // ============================================================
+    // UPDATE CUSTOMER
+    // ============================================================
+
     @Transactional
     public CustomerResponse updateCustomer(
             String id,
             UpdateCustomerRequest request
     ) {
 
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Customer not found: " + id)
-                );
+        if (id == null || id.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Customer ID cannot be null or blank"
+            );
+        }
 
-        if (request.getAccountHolderType() != null) {
+        if (request == null) {
+            throw new IllegalArgumentException(
+                    "Update request cannot be null"
+            );
+        }
+
+        Customer customer =
+                customerRepository.findById(id)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Customer not found: " + id
+                                )
+                        );
+
+        if (request.getAccountHolderType() != null
+                && !request.getAccountHolderType().isBlank()) {
+
             customer.setAccountHolderType(
                     request.getAccountHolderType()
             );
         }
 
-        if (request.getKycVerificationStatus() != null) {
+        if (request.getKycVerificationStatus() != null
+                && !request.getKycVerificationStatus().isBlank()) {
+
             customer.setKycVerificationStatus(
                     request.getKycVerificationStatus()
             );
@@ -102,49 +155,86 @@ public class CustomerService {
             );
         }
 
-        Customer updatedCustomer = customerRepository.save(customer);
+        Customer updatedCustomer =
+                customerRepository.save(customer);
 
         return mapToResponse(updatedCustomer);
     }
 
-    // ------------------------------------------------------------
-    // Delete customer
-    // ------------------------------------------------------------
+    // ============================================================
+    // DELETE CUSTOMER
+    // ============================================================
+
     @Transactional
     public void deleteCustomer(String id) {
 
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Customer not found: " + id)
-                );
+        if (id == null || id.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Customer ID cannot be null or blank"
+            );
+        }
+
+        Customer customer =
+                customerRepository.findById(id)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Customer not found: " + id
+                                )
+                        );
 
         customerRepository.delete(customer);
     }
 
-    // ------------------------------------------------------------
-    // Map entity -> response
-    // ------------------------------------------------------------
-    private CustomerResponse mapToResponse(Customer customer) {
+    // ============================================================
+    // ENTITY -> RESPONSE
+    // ============================================================
 
-    List<String> accountIds = customer.getAccounts()
-            .stream()
-            .map(Account::getId)
-            .collect(Collectors.toList());
+    private CustomerResponse mapToResponse(
+            Customer customer
+    ) {
 
-    CustomerResponse response = new CustomerResponse();
+        if (customer == null) {
+            throw new IllegalArgumentException(
+                    "Customer cannot be null"
+            );
+        }
 
-    response.setId(customer.getId());
-    response.setAccountIds(accountIds);
-    response.setAccountHolderType(customer.getAccountHolderType());
-    response.setKycVerificationStatus(
-            customer.getKycVerificationStatus()
-    );
-    response.setRiskCountryFlag(customer.getRiskCountryFlag());
-    response.setCreatedAt(customer.getCreatedAt());
+        List<Account> accounts =
+                customer.getAccounts() != null
+                        ? customer.getAccounts()
+                        : new ArrayList<>();
 
-    return response;
-}
+        List<String> accountIds = accounts.stream()
+                .filter(account -> account != null)
+                .map(Account::getId)
+                .filter(accountId -> accountId != null)
+                .collect(Collectors.toList());
 
+        CustomerResponse response =
+                new CustomerResponse();
 
+        response.setId(customer.getId());
 
+        response.setAccountIds(accountIds);
+
+        response.setAccountHolderType(
+                customer.getAccountHolderType()
+        );
+
+        response.setKycVerificationStatus(
+                customer.getKycVerificationStatus()
+        );
+
+        response.setRiskCountryFlag(
+                customer.getRiskCountryFlag() != null
+                        ? customer.getRiskCountryFlag()
+                        : false
+        );
+
+        response.setCreatedAt(
+                customer.getCreatedAt()
+        );
+
+        return response;
+    }
 }

@@ -24,47 +24,120 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/v1/customers")
 public class CustomerController {
-
     
-public CustomerController(CustomerService customerService) {
-    this.customerService = customerService;
-}
     private final CustomerService customerService;
-    public CustomerController() {
-        this.customerService = null;
+
+    public CustomerController(
+            CustomerService customerService
+    ) {
+        this.customerService = customerService;
     }
+
+    // ============================================================
+    // CREATE CUSTOMER
+    // ============================================================
 
     @PostMapping
-    public ResponseEntity<ApiResponse<CustomerResponse>> createCustomer(
-            @Valid @RequestBody CreateCustomerRequest request) {
-        CustomerResponse response = customerService.createCustomer(request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(response, "Customer created successfully"));
+    public ResponseEntity<ApiResponse<CustomerResponse>>
+    createCustomer(
+            @Valid @RequestBody CreateCustomerRequest request
+    ) {
+
+        CustomerResponse response =
+                customerService.createCustomer(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(
+                        ApiResponse.success(
+                                response,
+                                "Customer created successfully"
+                        )
+                );
     }
+
+    // ============================================================
+    // GET CUSTOMER BY ID
+    // ============================================================
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CustomerResponse>> getCustomerById(@PathVariable String id) {
-        CustomerResponse response = customerService.getCustomerById(id);
-        return ResponseEntity.ok(ApiResponse.success(response, "Customer retrieved successfully"));
+    public ResponseEntity<ApiResponse<CustomerResponse>>
+    getCustomerById(
+            @PathVariable String id
+    ) {
+
+        CustomerResponse response =
+                customerService.getCustomerById(id);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        response,
+                        "Customer retrieved successfully"
+                )
+        );
     }
+
+    // ============================================================
+    // GET ALL CUSTOMERS
+    // ============================================================
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getAllCustomers() {
-        List<CustomerResponse> response = customerService.getAllCustomers();
-        return ResponseEntity.ok(ApiResponse.success(response, "Customers retrieved successfully"));
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>>
+    getAllCustomers() {
+
+        List<CustomerResponse> response =
+                customerService.getAllCustomers();
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        response,
+                        "Customers retrieved successfully"
+                )
+        );
     }
+
+    // ============================================================
+    // UPDATE CUSTOMER
+    // ============================================================
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CustomerResponse>> updateCustomer(
+    public ResponseEntity<ApiResponse<CustomerResponse>>
+    updateCustomer(
             @PathVariable String id,
-            @Valid @RequestBody UpdateCustomerRequest request) {
-        CustomerResponse response = customerService.updateCustomer(id, request);
-        return ResponseEntity.ok(ApiResponse.success(response, "Customer updated successfully"));
+            @Valid @RequestBody UpdateCustomerRequest request
+    ) {
+
+        CustomerResponse response =
+                customerService.updateCustomer(
+                        id,
+                        request
+                );
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        response,
+                        "Customer updated successfully"
+                )
+        );
     }
 
+    // ============================================================
+    // DELETE CUSTOMER
+    // ============================================================
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteCustomer(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>>
+    deleteCustomer(
+            @PathVariable String id
+    ) {
+
         customerService.deleteCustomer(id);
-        return ResponseEntity.ok(ApiResponse.success(null, "Customer deleted successfully"));
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        null,
+                        "Customer deleted successfully"
+                )
+        );
     }
 }
