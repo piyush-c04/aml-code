@@ -1,29 +1,78 @@
 package com.aml.common.dto.common;
 
-import lombok.*;
-
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class ApiResponse<T> {
+
     private boolean success;
     private String message;
     private T data;
 
-    public static <T> ApiResponse<T> success(T data, String message) {
-        return ApiResponse.<T>builder()
-                .success(true)
-                .message(message)
-                .data(data)
-                .build();
+    public ApiResponse() {
     }
 
-    public static <T> ApiResponse<T> error(String message) {
-        return ApiResponse.<T>builder()
-                .success(false)
-                .message(message)
-                .data(null)
-                .build();
+    public ApiResponse(
+            boolean success,
+            String message,
+            T data
+    ) {
+        this.success = success;
+        this.message = message;
+        this.data = data;
+    }
+
+    // ============================================================
+    // SUCCESS RESPONSE
+    // ============================================================
+
+    public static <T> ApiResponse<T> success(
+            T data,
+            String message
+    ) {
+        return new ApiResponse<>(
+                true,
+                message,
+                data
+        );
+    }
+
+    // ============================================================
+    // ERROR RESPONSE
+    // ============================================================
+
+    public static <T> ApiResponse<T> error(
+            String message
+    ) {
+        return new ApiResponse<>(
+                false,
+                message,
+                null
+        );
+    }
+
+    // ============================================================
+    // GETTERS / SETTERS
+    // ============================================================
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public void setData(T data) {
+        this.data = data;
     }
 }

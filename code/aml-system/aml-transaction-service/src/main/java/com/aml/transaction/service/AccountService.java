@@ -1,5 +1,13 @@
 package com.aml.transaction.service;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.aml.common.dto.request.CreateAccountRequest;
 import com.aml.common.dto.request.UpdateAccountRequest;
 import com.aml.common.dto.response.AccountResponse;
@@ -9,16 +17,9 @@ import com.aml.common.repository.AccountRepository;
 import com.aml.common.repository.CustomerRepository;
 import com.aml.common.utils.HashUtil;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 @Service
 public class AccountService {
+
 
     private final AccountRepository accountRepository;
     private final CustomerRepository customerRepository;

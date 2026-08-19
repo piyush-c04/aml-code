@@ -22,4 +22,4 @@ eureka:
 
 
 fastapi:
-  base-url: http://localhost:8000
+  base-url: http://localhost:8500
