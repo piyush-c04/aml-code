@@ -14,7 +14,11 @@ public class Account {
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(
+            name = "customer_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_accounts_customer")
+    )
     private Customer customer;
 
     @Column(name = "account_hash", nullable = false, unique = true, length = 64)

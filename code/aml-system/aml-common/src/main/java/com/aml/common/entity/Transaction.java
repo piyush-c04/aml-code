@@ -43,11 +43,19 @@ public class Transaction {
     private String transactionId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "sender_account_id", nullable = false)
+    @JoinColumn(
+            name = "sender_account_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_transactions_sender")
+    )
     private Account senderAccount;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "receiver_account_id", nullable = false)
+    @JoinColumn(
+            name = "receiver_account_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_transactions_receiver")
+    )
     private Account receiverAccount;
 
     @Column(
