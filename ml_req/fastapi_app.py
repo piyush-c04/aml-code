@@ -645,17 +645,7 @@ def deterministic_text(
         factor_text = risky[0]
     else:
         factor_text = "the combined transaction and account signals"
-    recommendations = {
-        "LOW": "Continue routine monitoring and retain the assessment for audit.",
-        "MEDIUM": "Route to an AML analyst to verify the transaction purpose and account context.",
-        "HIGH": "Perform enhanced due diligence and review related accounts and beneficiaries.",
-        "CRITICAL": "Place the transaction under immediate review and escalate it to senior compliance.",
-    }
-    recommendation = recommendations.get(
-        category,
-        "Route the transaction to an AML analyst for review." if should_flag
-        else "Continue routine monitoring.",
-    )
+    recommendation = contextual_recommendation(category, should_flag, factors)
     return GeminiOutput(
         one_line_explanation=(
             f"This transaction has a {category.lower()} risk rating; "
@@ -663,6 +653,32 @@ def deterministic_text(
         ),
         recommendation=recommendation,
     )
+
+
+def contextual_recommendation(
+    category: str, should_flag: bool, factors: list[FeatureFactor]
+) -> str:
+    """Combine a controlled AML action with transaction-specific model evidence."""
+    policies = {
+        "LOW": "Continue routine monitoring and retain the assessment for audit",
+        "MEDIUM": "Route to an AML analyst to verify the transaction purpose and account context",
+        "HIGH": "Perform enhanced due diligence and review related accounts and beneficiaries",
+        "CRITICAL": "Immediately review the transaction and escalate it to senior compliance",
+    }
+    preferred_direction = "decreases_risk" if category == "LOW" else "increases_risk"
+    relevant = [factor for factor in factors if factor.direction == preferred_direction][:2]
+    if not relevant:
+        relevant = factors[:2]
+    focus = " and ".join(
+        f"{factor.display_name} ({factor.feature_value:g})" for factor in relevant
+    )
+    policy = policies.get(
+        category,
+        "Route the transaction to an AML analyst for review"
+        if should_flag
+        else "Continue routine monitoring",
+    )
+    return f"{policy}; focus on {focus}." if focus else f"{policy}."
 
 
 def gemini_text(
@@ -723,8 +739,10 @@ def gemini_text(
                 f"{category.title()} risk ({score:.2f}/100): "
                 f"{generated.one_line_explanation}"
             )
-        # Compliance actions are policy-controlled rather than left to free-form LLM output.
-        generated.recommendation = required_actions[category]
+        # Keep the action policy-controlled while tailoring it to this prediction.
+        generated.recommendation = contextual_recommendation(
+            category, should_flag, factors
+        )
         return generated, "gemini", None
     except Exception as exc:
         LOG.exception("Gemini explanation failed; returning deterministic explanation")
