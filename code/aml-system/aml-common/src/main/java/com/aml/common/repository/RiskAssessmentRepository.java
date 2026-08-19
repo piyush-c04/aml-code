@@ -17,7 +17,8 @@ public interface RiskAssessmentRepository
             String requestId
     );
 
-    Optional<RiskAssessment> findFirstByTransaction_IdOrderByCreatedAtDesc(
+    Optional<RiskAssessment>
+    findFirstByTransaction_IdOrderByCreatedAtDesc(
             String transactionId
     );
 }

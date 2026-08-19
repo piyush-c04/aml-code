@@ -2,6 +2,7 @@ package com.aml.transaction.controller;
 
 import com.aml.common.dto.common.ApiResponse;
 import com.aml.common.dto.request.CreateTransactionRequest;
+import com.aml.common.dto.response.RiskAssessmentResponse;
 import com.aml.common.dto.response.TransactionResponse;
 import com.aml.transaction.service.TransactionService;
 import jakarta.validation.Valid;
@@ -124,4 +125,25 @@ public class TransactionController {
                 )
         );
     }
+
+//Get risk assessment
+
+    @GetMapping("/{transactionId}/risk")
+public ResponseEntity<ApiResponse<RiskAssessmentResponse>>
+getRiskAssessment(
+        @PathVariable String transactionId
+) {
+
+    RiskAssessmentResponse response =
+            transactionService.getRiskAssessment(
+                    transactionId
+            );
+
+    return ResponseEntity.ok(
+            ApiResponse.success(
+                    response,
+                    "Risk assessment fetched successfully"
+            )
+    );
+}
 }

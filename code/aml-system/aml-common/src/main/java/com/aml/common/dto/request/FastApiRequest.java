@@ -16,6 +16,7 @@ public class FastApiRequest {
     @JsonProperty("receiver_account")
     private String receiverAccount;
 
+    @JsonProperty("amount")
     private BigDecimal amount;
 
     @JsonProperty("payment_currency")
@@ -37,10 +38,10 @@ public class FastApiRequest {
     private OffsetDateTime transactionDatetime;
 
     @JsonProperty("sender_history")
-    private HistoryDto senderHistory;
+    private History senderHistory;
 
     @JsonProperty("receiver_history")
-    private HistoryDto receiverHistory;
+    private History receiverHistory;
 
     @JsonProperty("use_gemini")
     private Boolean useGemini;
@@ -130,19 +131,19 @@ public class FastApiRequest {
         this.transactionDatetime = transactionDatetime;
     }
 
-    public HistoryDto getSenderHistory() {
+    public History getSenderHistory() {
         return senderHistory;
     }
 
-    public void setSenderHistory(HistoryDto senderHistory) {
+    public void setSenderHistory(History senderHistory) {
         this.senderHistory = senderHistory;
     }
 
-    public HistoryDto getReceiverHistory() {
+    public History getReceiverHistory() {
         return receiverHistory;
     }
 
-    public void setReceiverHistory(HistoryDto receiverHistory) {
+    public void setReceiverHistory(History receiverHistory) {
         this.receiverHistory = receiverHistory;
     }
 
@@ -154,10 +155,14 @@ public class FastApiRequest {
         this.useGemini = useGemini;
     }
 
-    public static class HistoryDto {
+    // ============================================================
+    // HISTORY OBJECT
+    // ============================================================
+
+    public static class History {
 
         @JsonProperty("transaction_count")
-        private int transactionCount;
+        private Integer transactionCount;
 
         @JsonProperty("average_amount")
         private BigDecimal averageAmount;
@@ -172,32 +177,16 @@ public class FastApiRequest {
         private BigDecimal maximumAmount;
 
         @JsonProperty("unique_counterparties")
-        private int uniqueCounterparties;
+        private Integer uniqueCounterparties;
 
-        public HistoryDto() {
+        public History() {
         }
 
-        public HistoryDto(
-                int transactionCount,
-                BigDecimal averageAmount,
-                BigDecimal amountStddev,
-                BigDecimal minimumAmount,
-                BigDecimal maximumAmount,
-                int uniqueCounterparties
-        ) {
-            this.transactionCount = transactionCount;
-            this.averageAmount = averageAmount;
-            this.amountStddev = amountStddev;
-            this.minimumAmount = minimumAmount;
-            this.maximumAmount = maximumAmount;
-            this.uniqueCounterparties = uniqueCounterparties;
-        }
-
-        public int getTransactionCount() {
+        public Integer getTransactionCount() {
             return transactionCount;
         }
 
-        public void setTransactionCount(int transactionCount) {
+        public void setTransactionCount(Integer transactionCount) {
             this.transactionCount = transactionCount;
         }
 
@@ -233,13 +222,11 @@ public class FastApiRequest {
             this.maximumAmount = maximumAmount;
         }
 
-        public int getUniqueCounterparties() {
+        public Integer getUniqueCounterparties() {
             return uniqueCounterparties;
         }
 
-        public void setUniqueCounterparties(
-                int uniqueCounterparties
-        ) {
+        public void setUniqueCounterparties(Integer uniqueCounterparties) {
             this.uniqueCounterparties = uniqueCounterparties;
         }
     }

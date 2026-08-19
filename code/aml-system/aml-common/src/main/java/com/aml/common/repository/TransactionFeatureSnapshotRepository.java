@@ -13,7 +13,8 @@ public interface TransactionFeatureSnapshotRepository
             String transactionId
     );
 
-    Optional<TransactionFeatureSnapshot> findFirstByTransaction_IdOrderByCreatedAtDesc(
+    Optional<TransactionFeatureSnapshot>
+    findFirstByTransaction_IdOrderByCreatedAtDesc(
             String transactionId
     );
 }
