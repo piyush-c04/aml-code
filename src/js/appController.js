@@ -39,17 +39,26 @@ define([
     // oj-module needs a view/viewModel configuration, not the legacy ojRouter
     // name-only configuration.  ModuleElementUtils creates it for each route.
     self.activeView = ko.observable('dashboard');
+    self.searchText = ko.observable('');
     self.router.stateId.subscribe(function (route) {
       if (route) self.activeView(route);
     });
-    self.moduleAdapter = {
-      koObservableConfig: ko.pureComputed(function () {
-        return ModuleElementUtils.createConfig({
-          name: self.activeView(),
-          params: { rootRouter: self.router }
-        });
-      })
-    };
+    // oj-module binds before createConfig's Promise resolves. An empty view is
+    // a valid initial config and prevents the binding from receiving undefined.
+    self.moduleConfig = ko.observable({ view: [], viewModel: null });
+    self.moduleAdapter = { koObservableConfig: self.moduleConfig };
+    var navigationSequence = 0;
+    function loadModule(name) {
+      var sequence = ++navigationSequence;
+      return ModuleElementUtils.createConfig({
+        name: name,
+        params: { rootRouter: self.router, globalSearch: self.searchText }
+      }).then(function (config) {
+        if (sequence === navigationSequence) self.moduleConfig(config);
+      });
+    }
+    loadModule(self.activeView());
+    self.activeView.subscribe(loadModule);
     self.selection = { path: self.router.stateId };
     self.sideDrawerOn = ko.observable(false);
     self.smScreen = ResponsiveKnockoutUtils.createMediaQueryObservable(
@@ -82,10 +91,23 @@ define([
     self.signupEmail = ko.observable('');
     self.signupPassword = ko.observable('');
     self.mobileMenuOpen = ko.observable(false);
-    self.searchText = ko.observable('');
     self.toastMessage = ko.observable('');
     self.alertCount = ko.observable(9);
     self.currentUser = ko.observable({ name: 'Jeel Doshi', role: 'Senior compliance', initials: 'JD' });
+
+    // The compact shell uses a native input, so connect it to the observable
+    // shared with each routed view.
+    window.setTimeout(function () {
+      var input = document.querySelector('.topbar .search input');
+      if (input) input.addEventListener('input', function () { self.searchText(input.value); });
+      var topbar = document.querySelector('.topbar');
+      var sidebar = document.querySelector('.sidebar');
+      if (topbar && sidebar) {
+        var menu = document.createElement('button'); menu.className = 'menu-button'; menu.type = 'button'; menu.setAttribute('aria-label', 'Open navigation'); menu.textContent = '☰';
+        menu.addEventListener('click', function () { self.openMenu(); }); topbar.insertBefore(menu, topbar.firstChild);
+        self.mobileMenuOpen.subscribe(function (open) { sidebar.classList.toggle('open', open); });
+      }
+    }, 0);
 
     self.announce = function (data, event) {
       self.message(event.detail.message);
@@ -108,6 +130,7 @@ define([
       if (!item || !item.path) return;
       self.activeView(item.path);
       self.router.go(item.path);
+      self.mobileMenuOpen(false);
     };
 
     self.login = function () {

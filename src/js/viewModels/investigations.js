@@ -1,27 +1,10 @@
-define(['knockout','ojs/ojarraydataprovider','models/data','viewModels/base','ojs/ojtable'], function(ko,ArrayDataProvider,data,BaseViewModel){
+define(['knockout','ojs/ojarraydataprovider','services/api','viewModels/base','ojs/ojtable'], function(ko,ArrayDataProvider,api,BaseViewModel){
   'use strict';
-  function InvestigationsViewModel(){
-    var self=this;
-    BaseViewModel.call(self);
-    self.rows=ko.observableArray(data.investigations.slice());
-    self.dataProvider=new ArrayDataProvider(self.rows,{keyAttributes:'id'});
-    self.columns=[{headerText:'INVESTIGATION',field:'id'},{headerText:'SOURCE ALERT',field:'alert'},{headerText:'CUSTOMER',field:'customer'},{headerText:'INVESTIGATOR',field:'owner'},{headerText:'PRIORITY',field:'priority'},{headerText:'STATUS',field:'status'},{headerText:'CREATED',field:'created'},{headerText:'DUE DATE',field:'due'},{headerText:'RESOLUTION',field:'resolution'}];
-    self.selectedInvestigation=ko.observable(null);
-    self.noteDraft=ko.observable('');
-    self.timeline=ko.observableArray([]);
-    self.selectedCustomer=ko.pureComputed(function(){var item=self.selectedInvestigation();return item&&data.customers.find(function(customer){return customer.id===item.customer;});});
-    self.priorityClass=function(priority){return String(priority).toLowerCase();};
-    self.statusClass=function(status){return String(status).toLowerCase().replace(/\\s+/g,'-');};
-    self.openInvestigation=function(investigation){
-      self.selectedInvestigation(investigation||null);
-      self.noteDraft('');
-      self.timeline([{title:'Alert created',detail:'Kafka · aml.alert.created'},{title:'Investigation opened',detail:'Correlation ID retained'},{title:'Customer profile reviewed',detail:'Audit entry recorded'}]);
-    };
-    self.closeInvestigation=function(){self.selectedInvestigation(null);};
-    self.addNote=function(){var note=self.noteDraft().trim();if(!note)return;self.timeline.push({title:'Analyst note added',detail:note});self.noteDraft('');};
-    self.escalate=function(){var item=self.selectedInvestigation();if(!item)return;item.status='ESCALATED';self.rows.valueHasMutated();self.timeline.push({title:'Case escalated',detail:'Escalated for senior review'});};
-    self.resolve=function(){var item=self.selectedInvestigation();if(!item)return;item.status='RESOLVED';item.resolution='RESOLVED';self.rows.valueHasMutated();self.timeline.push({title:'Case resolved',detail:'Resolution recorded'});};
-    self.create=function(){window.alert('Create investigation form ready.');};
-  }
-  return InvestigationsViewModel;
+  function InvestigationsViewModel(){var self=this;BaseViewModel.call(self);self.rows=ko.observableArray([]);self.error=ko.observable('');self.loading=ko.observable(true);self.dataProvider=ko.pureComputed(function(){return new ArrayDataProvider(self.rows(),{keyAttributes:'id'});});self.selectedInvestigation=ko.observable(null);self.noteDraft=ko.observable('');self.timeline=ko.observableArray([]);self.selectedCustomer=ko.observable(null);
+    function map(i){return{id:i.id,alert:i.transactionId,customer:i.customerId,owner:i.owner||'Unassigned',priority:i.priority,status:i.status,created:i.createdAt?new Date(i.createdAt).toLocaleDateString():'',due:'—',resolution:i.resolution||'—'};}
+    api.get('/cases').then(function(items){self.rows((items||[]).map(map));}).catch(function(e){self.error(e.message);}).finally(function(){self.loading(false);});
+    self.priorityClass=function(v){return String(v||'').toLowerCase();};self.statusClass=function(v){return String(v||'').toLowerCase().replace(/\s+/g,'-').replace(/_/g,'-');};self.openInvestigation=function(i){self.selectedInvestigation(i||null);self.timeline([{title:'Investigation opened',detail:'Backend case '+i.id}]);};self.closeInvestigation=function(){self.selectedInvestigation(null);};self.addNote=function(){var n=self.noteDraft().trim();if(n){self.timeline.push({title:'Analyst note (session only)',detail:n});self.noteDraft('');}};
+    function update(change,title){var item=self.selectedInvestigation();if(!item)return;api.put('/cases/'+encodeURIComponent(item.id),change).then(function(saved){Object.assign(item,map(saved));self.rows.valueHasMutated();self.timeline.push({title:title,detail:'Saved to investigation service'});}).catch(function(e){self.error(e.message);});}
+    self.escalate=function(){update({status:'ESCALATED'},'Case escalated');};self.resolve=function(){update({status:'RESOLVED',resolution:'Resolved by analyst'},'Case resolved');};self.create=function(){self.error('Create a case from a flagged transaction in AML alerts.');};
+  } return InvestigationsViewModel;
 });

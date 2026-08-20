@@ -988,6 +988,13 @@ textarea {
 .alert-triage.is-open { transform: translateX(0); }
 .investigation-report { position: fixed; z-index: 91; top: 0; right: 0; width: min(650px, 100vw); height: 100vh; padding: 32px 30px; overflow-y: auto; background: #fff; box-shadow: -14px 0 35px rgba(18, 35, 30, .16); transform: translateX(105%); transition: transform .22s ease; }
 .investigation-report.is-open { transform: translateX(0); }
+.transaction-detail { position: fixed; z-index: 91; top: 0; right: 0; width: min(620px, 100vw); height: 100vh; padding: 32px 30px; overflow-y: auto; background: #fff; box-shadow: -14px 0 35px rgba(18,35,30,.16); transform: translateX(105%); transition: transform .22s ease; }
+.transaction-detail.is-open { transform: translateX(0); }
+.transaction-detail h2 { overflow-wrap: anywhere; }
+.transaction-detail > p { color: var(--muted); }
+.responsive-table { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.loading-message, .error-message { padding: 12px 16px; border-radius: 8px; background: #eef5f2; }
+.error-message { color: var(--red); background: var(--red-bg); }
 .investigation-report h2 { margin: 8px 0 4px; font-size: 24px; }
 .investigation-report > p { margin: 0; color: var(--muted); font-size: 13px; }
 .investigation-report h3 { margin: 28px 0 12px; font-size: 15px; }
@@ -1267,6 +1274,11 @@ blockquote {
     }
 
     .sidebar {
+        position: fixed;
+        z-index: 120;
+        top: 0;
+        bottom: 0;
+        left: 0;
         transform: translateX(-100%);
         transition: .25s;
         width: 310px
@@ -1309,6 +1321,11 @@ blockquote {
     .donut-area {
         grid-template-columns: 220px 1fr
     }
+
+    .profile-grid { grid-template-columns: 1fr; }
+    .page-head { flex-wrap: wrap; gap: 16px; }
+    .page-actions { flex-wrap: wrap; }
+    .panel { min-width: 0; }
 }
 
 @media(max-width:560px) {
@@ -1320,9 +1337,8 @@ blockquote {
         grid-template-columns: 1fr
     }
 
-    .page-actions {
-        display: none
-    }
+    .page-actions { display: flex; width: 100%; }
+    .page-actions button, .page-actions oj-button { flex: 1; }
 
     .content {
         padding: 24px 16px
@@ -1373,6 +1389,24 @@ blockquote {
     .profile-grid {
         grid-template-columns: 1fr
     }
+
+    .topbar { min-height: 64px; height: auto; padding: 10px 12px; }
+    .topbar .search { order: 2; flex-basis: 100%; margin: 0; }
+    .topbar .search kbd { display: none; }
+    .content { width: 100%; overflow: hidden; }
+    .panel { padding: 18px 14px; border-radius: 12px; }
+    .profile-title { align-items: flex-start; flex-wrap: wrap; }
+    .profile-title > .risk-pill { margin-left: 0; }
+    .detail-list, .triage-context, .triage-stats, .investigation-stats { grid-template-columns: 1fr; }
+    .recommendation { flex-direction: column; }
+    .transaction-detail, .alert-triage, .investigation-report { width: 100vw; padding: 24px 18px; }
+
+    .responsive-table { overflow: visible; }
+    .responsive-table .aegis-data-table thead { display: none; }
+    .responsive-table .aegis-data-table, .responsive-table .aegis-data-table tbody, .responsive-table .aegis-data-table tr, .responsive-table .aegis-data-table td { display: block; width: 100%; }
+    .responsive-table .aegis-data-table tr { margin-bottom: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+    .responsive-table .aegis-data-table td { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; border: 0; text-align: right; overflow-wrap: anywhere; }
+    .responsive-table .aegis-data-table td:before { content: attr(data-label); flex: 0 0 34%; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .05em; text-align: left; text-transform: uppercase; }
 
     .signal-card {
         left: 20px;
